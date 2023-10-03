@@ -4,8 +4,8 @@ import { convertDistance, findNearest, getDistance } from "geolib";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import Carousel from "../Carousel";
 import FeatureList from "../FeatureList";
-import MUICarousel from "../MUICarousel";
 
 export default function UpperFold() {
   const router = useRouter();
@@ -112,7 +112,7 @@ export default function UpperFold() {
           alt="Salt Spring Island Kombucha"
           src="/pexels-red-nguyen-17924736.jpg"
           className="absolute inset-0 object-cover w-full h-full"
-          layout="fill"
+          fill
         />
       </div>
 
@@ -129,7 +129,7 @@ export default function UpperFold() {
         </div>
       </div>
 
-      <MUICarousel />
+      <Carousel />
 
       <FeatureList />
 

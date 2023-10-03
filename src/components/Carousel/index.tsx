@@ -1,8 +1,17 @@
 "use client";
 
+import { amatic } from "@/app/fonts";
+import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
+import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import Button from "@mui/material/Button";
+import MobileStepper from "@mui/material/MobileStepper";
+import { useTheme } from "@mui/material/styles";
 import Image from "next/image";
-import { useEffect } from "react";
-import { Carousel, initTE } from "tw-elements";
+import * as React from "react";
+import SwipeableViews from "react-swipeable-views";
+import { autoPlay } from "react-swipeable-views-utils";
+
+const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
 interface CarouselItem {
   src: string;
@@ -39,139 +48,126 @@ const items: CarouselItem[] = [
     alt: "Wild Rose",
   },
 ];
+function Carousel() {
+  const theme = useTheme();
+  const [activeStep, setActiveStep] = React.useState(0);
+  const maxSteps = items.length;
 
-const carouselHeight = 583;
-const carouselWidth = 1320;
+  const pageWidth = React.useMemo(() => {
+    if (typeof window === "undefined") {
+      return 0;
+    }
 
-export default function DefaultCarousel() {
-  useEffect(() => {
-    const init = async () => {
-      initTE({ Carousel });
-    };
-    init();
+    return window.innerWidth;
   }, []);
 
+  const pageHeight = React.useMemo(() => {
+    if (typeof window === "undefined") {
+      return 0;
+    }
+
+    return window.innerHeight;
+  }, []);
+
+  const carouselRatio = 3840 / 1543;
+
+  const isMobile = pageWidth < 768;
+
+  const carouselHeight = React.useMemo(() => {
+    if (isMobile) {
+      return pageHeight * 0.5;
+    }
+
+    return pageHeight / carouselRatio;
+  }, [carouselRatio, isMobile, pageHeight]);
+
+  const carouselWidth = React.useMemo(() => {
+    if (!carouselHeight || !pageWidth) return 0;
+
+    if (isMobile) {
+      return carouselHeight * carouselRatio;
+    }
+
+    return pageWidth * carouselRatio;
+  }, [carouselRatio, carouselHeight, isMobile, pageWidth]);
+
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const handleStepChange = (step: number) => {
+    setActiveStep(step);
+  };
+
+  if (typeof window === undefined) return null;
+
   return (
-    <div
-      id="carouselExampleCaptions"
-      className="relative my-4"
-      data-te-carousel-init
-      data-te-ride="carousel"
-    >
-      <div
-        className="absolute bottom-0 left-0 right-0 z-[2] mx-[15%] mb-4 flex list-none justify-center p-0"
-        data-te-carousel-indicators
+    <div className="w-full my-12">
+      <AutoPlaySwipeableViews
+        axis={theme.direction === "rtl" ? "x-reverse" : "x"}
+        index={activeStep}
+        onChangeIndex={handleStepChange}
+        enableMouseEvents
       >
-        {items.map((item, index) => (
-          <button
-            key={item.alt}
-            type="button"
-            data-te-target="#carouselExampleCaptions"
-            data-te-slide-to={index}
-            data-te-carousel-active
-            className="mx-[3px] box-content h-[3px] w-[30px] flex-initial cursor-pointer border-0 border-y-[10px] border-solid border-transparent bg-pink-600 bg-clip-padding p-0 -indent-[999px] opacity-50 transition-opacity duration-[600ms] ease-[cubic-bezier(0.25,0.1,0.25,1.0)] motion-reduce:transition-none"
-            aria-current="true"
-            aria-label={`Slide ${index + 1}`}
-          />
-        ))}
-      </div>
-
-      <div className="relative w-full overflow-hidden after:clear-both after:block after:content-['']">
-        <div
-          className="relative float-left -mr-[100%] w-full transition-transform duration-[600ms] ease-in-out motion-reduce:transition-none"
-          data-te-carousel-active
-          data-te-carousel-item
-          style={{ backfaceVisibility: "hidden" }}
-        >
-          <Image
-            src="/SS_Kombucha_bottles/Blue Algae_duo.png"
-            className="block w-full"
-            alt="Blue Algae"
-            width={carouselWidth}
-            height={carouselHeight}
-          />
-          {/* <div className="absolute inset-x-[15%] bottom-5 hidden py-5 text-center  md:block">
-            <h5 className={`text-3xl text-pink-700 ${amatic.className}`}>
-              Blue Algae
-            </h5>
-          </div> */}
-        </div>
-
-        {items.slice(1).map((item) => (
-          <div
-            key={item.alt}
-            className="relative float-left -mr-[100%] hidden w-full transition-transform duration-[600ms] ease-in-out motion-reduce:transition-none"
-            data-te-carousel-item
-            style={{ backfaceVisibility: "hidden" }}
-          >
-            <Image
-              src={item.src}
-              className="block w-full"
-              alt={item.alt}
-              width={carouselWidth}
-              height={carouselHeight}
-            />
-            {/* <div className="absolute inset-x-[15%] bottom-5 hidden py-5 text-center md:block">
-              <h5 className={`text-3xl text-pink-700 ${amatic.className}`}>
-                {item.alt}
-              </h5>
-            </div> */}
+        {items.map((step, index) => (
+          <div key={step.alt}>
+            {Math.abs(activeStep - index) <= 2 ? (
+              <div className="block w-full overflow-hidden h-full">
+                <div>
+                  <h3
+                    className={`text-center text-4xl lg:text-6xl ${amatic.className}`}
+                  >
+                    {step.alt}
+                  </h3>
+                </div>
+                <Image
+                  width={carouselWidth}
+                  height={carouselHeight}
+                  className="block w-full"
+                  src={step.src}
+                  alt={step.alt}
+                />
+              </div>
+            ) : null}
           </div>
         ))}
-      </div>
-
-      <button
-        className="absolute bottom-0 left-0 top-0 z-[1] flex w-[15%] items-center justify-center border-0 bg-none p-0 text-center text-pink-600 opacity-50 transition-opacity duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] hover:text-pink-800 hover:no-underline hover:opacity-90 hover:outline-none focus:text-pink-800 focus:no-underline focus:opacity-90 focus:outline-none motion-reduce:transition-none"
-        type="button"
-        data-te-target="#carouselExampleCaptions"
-        data-te-slide="prev"
-      >
-        <span className="inline-block h-20 w-20">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            className="h-20 w-20"
+      </AutoPlaySwipeableViews>
+      <MobileStepper
+        className="!bg-transparent"
+        steps={maxSteps}
+        position="static"
+        activeStep={activeStep}
+        nextButton={
+          <Button
+            size="small"
+            onClick={handleNext}
+            disabled={activeStep === maxSteps - 1}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 19.5L8.25 12l7.5-7.5"
-            />
-          </svg>
-        </span>
-        <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
-          Previous
-        </span>
-      </button>
-      <button
-        className="absolute bottom-0 right-0 top-0 z-[1] flex w-[15%] items-center justify-center border-0 bg-none p-0 text-center text-pink-600 opacity-50 transition-opacity duration-150 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] hover:text-pink-800 hover:no-underline hover:opacity-90 hover:outline-none focus:text-pink-800 focus:no-underline focus:opacity-90 focus:outline-none motion-reduce:transition-none"
-        type="button"
-        data-te-target="#carouselExampleCaptions"
-        data-te-slide="next"
-      >
-        <span className="inline-block h-20 w-20">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            className="h-20 w-20"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8.25 4.5l7.5 7.5-7.5 7.5"
-            />
-          </svg>
-        </span>
-        <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
-          Next
-        </span>
-      </button>
+            Next
+            {theme.direction === "rtl" ? (
+              <KeyboardArrowLeft />
+            ) : (
+              <KeyboardArrowRight />
+            )}
+          </Button>
+        }
+        backButton={
+          <Button size="small" onClick={handleBack} disabled={activeStep === 0}>
+            {theme.direction === "rtl" ? (
+              <KeyboardArrowRight />
+            ) : (
+              <KeyboardArrowLeft />
+            )}
+            Back
+          </Button>
+        }
+      />
     </div>
   );
 }
+
+export default Carousel;
