@@ -5,6 +5,7 @@ export const roboto = Roboto({
   display: "swap",
   subsets: ["latin"],
 });
+
 export const amatic = Amatic_SC({
   weight: "400",
   subsets: ["latin"],

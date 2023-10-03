@@ -34,6 +34,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("flowbite/plugin"), require("tw-elements/dist/plugin.cjs")],
+  plugins: [require("tw-elements/dist/plugin.cjs")],
 };
 export default config;

@@ -1,12 +1,20 @@
 "use client";
 
 import UpperFold from "@/components/UpperFold";
-import { Flowbite } from "flowbite-react";
+import { createTheme, ThemeProvider } from "@mui/material";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "rgb(162, 28, 175)",
+    },
+  },
+});
 
 export default function Home() {
   return (
-    <Flowbite>
+    <ThemeProvider theme={theme}>
       <UpperFold />
-    </Flowbite>
+    </ThemeProvider>
   );
 }

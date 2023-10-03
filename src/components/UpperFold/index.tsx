@@ -1,15 +1,11 @@
 import { NearestLocation, locations } from "@/app/locations";
-import { Spinner } from "flowbite-react";
+import { Button, CircularProgress } from "@mui/material";
 import { convertDistance, findNearest, getDistance } from "geolib";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import FeatureList from "../FeatureList";
-
-const DynamicCarousel = dynamic(() => import("../Carousel"), {
-  ssr: false,
-});
+import MUICarousel from "../MUICarousel";
 
 export default function UpperFold() {
   const router = useRouter();
@@ -132,25 +128,31 @@ export default function UpperFold() {
           </div>
         </div>
       </div>
-      <div className="mx-auto max-w-5xl">
-        <DynamicCarousel />
-      </div>
+
+      <MUICarousel />
 
       <FeatureList />
 
       <div className="mx-auto max-w-3xl">
         <div className="text-center">
           <div className="mt-16 flex items-center justify-center gap-x-6">
-            <button
-              type="button"
-              className="text-white bg-primary-700 hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 font-medium rounded-full text-xl px-8 py-4 text-center mb-2 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-900"
+            <Button
+              variant="contained"
+              size="large"
               onClick={handleButtonClick}
+              startIcon={
+                fetchingLocation && (
+                  <CircularProgress
+                    aria-label="Loading location info"
+                    className="mr-2"
+                    size={20}
+                    color="inherit"
+                  />
+                )
+              }
             >
-              {fetchingLocation && (
-                <Spinner aria-label="Loading location info" className="mr-2" />
-              )}
               Find Kombucha Near Me
-            </button>
+            </Button>
           </div>
         </div>
       </div>
