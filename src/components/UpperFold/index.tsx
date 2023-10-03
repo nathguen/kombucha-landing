@@ -1,7 +1,10 @@
+import { NearestLocation, locations } from "@/app/locations";
 import { Spinner } from "flowbite-react";
+import { convertDistance, findNearest, getDistance } from "geolib";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import FeatureList from "../FeatureList";
 
 const DynamicCarousel = dynamic(() => import("../Carousel"), {
@@ -9,9 +12,59 @@ const DynamicCarousel = dynamic(() => import("../Carousel"), {
 });
 
 export default function UpperFold() {
+  const router = useRouter();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const [location, setLocation] = useState<GeolocationPosition | null>(null);
+
+  const fetchClosestKombucha = async (position: GeolocationPosition) => {
+    let { latitude, longitude } = position.coords;
+
+    // // @TODO: remove this
+    // latitude = 49.525071603022475;
+    // longitude = -124.85587601763594;
+
+    try {
+      const nearest: NearestLocation = findNearest(
+        {
+          latitude,
+          longitude,
+        },
+        locations.map((item) => {
+          return {
+            ...item,
+            latitude: item.coordinates[0],
+            longitude: item.coordinates[1],
+          };
+        })
+      ) as NearestLocation;
+
+      const distance = getDistance(
+        {
+          latitude,
+          longitude,
+        },
+        {
+          latitude: nearest.latitude,
+          longitude: nearest.longitude,
+        }
+      );
+
+      const distanceInKM = convertDistance(distance, "km");
+
+      if (distanceInKM > 50) {
+        // redirect to signup page
+        router.push("/signup");
+        return;
+      }
+
+      // redirect to nearest location page
+      window.location.href = `https://www.google.com/maps/dir/${latitude},${longitude}/${nearest.address}`;
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const getUserLocation = (
     callback: (position: GeolocationPosition) => void,
@@ -27,7 +80,7 @@ export default function UpperFold() {
         }
       );
     } else {
-      console.log("Geolocation is not available in this browser.");
+      alert("Geolocation is not available in this browser.");
     }
   };
 
@@ -45,6 +98,12 @@ export default function UpperFold() {
       }
     );
   };
+
+  useEffect(() => {
+    if (!location) return;
+
+    fetchClosestKombucha(location);
+  }, [fetchClosestKombucha, location]);
 
   return (
     <div className="relative isolate pt-4 flex flex-1 flex-col pb-10">
