@@ -4,7 +4,7 @@ import { convertDistance, findNearest, getDistance } from "geolib";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FeatureList from "../FeatureList";
 
 const DynamicCarousel = dynamic(() => import("../Carousel"), {
@@ -18,53 +18,56 @@ export default function UpperFold() {
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const [location, setLocation] = useState<GeolocationPosition | null>(null);
 
-  const fetchClosestKombucha = async (position: GeolocationPosition) => {
-    let { latitude, longitude } = position.coords;
+  const fetchClosestKombucha = useCallback(
+    async (position: GeolocationPosition) => {
+      let { latitude, longitude } = position.coords;
 
-    // // @TODO: remove this
-    // latitude = 49.525071603022475;
-    // longitude = -124.85587601763594;
+      // // @TODO: remove this
+      // latitude = 49.525071603022475;
+      // longitude = -124.85587601763594;
 
-    try {
-      const nearest: NearestLocation = findNearest(
-        {
-          latitude,
-          longitude,
-        },
-        locations.map((item) => {
-          return {
-            ...item,
-            latitude: item.coordinates[0],
-            longitude: item.coordinates[1],
-          };
-        })
-      ) as NearestLocation;
+      try {
+        const nearest: NearestLocation = findNearest(
+          {
+            latitude,
+            longitude,
+          },
+          locations.map((item) => {
+            return {
+              ...item,
+              latitude: item.coordinates[0],
+              longitude: item.coordinates[1],
+            };
+          })
+        ) as NearestLocation;
 
-      const distance = getDistance(
-        {
-          latitude,
-          longitude,
-        },
-        {
-          latitude: nearest.latitude,
-          longitude: nearest.longitude,
+        const distance = getDistance(
+          {
+            latitude,
+            longitude,
+          },
+          {
+            latitude: nearest.latitude,
+            longitude: nearest.longitude,
+          }
+        );
+
+        const distanceInKM = convertDistance(distance, "km");
+
+        if (distanceInKM > 50) {
+          // redirect to signup page
+          router.push("/signup");
+          return;
         }
-      );
 
-      const distanceInKM = convertDistance(distance, "km");
-
-      if (distanceInKM > 50) {
-        // redirect to signup page
-        router.push("/signup");
-        return;
+        // redirect to nearest location page
+        window.location.href = `https://www.google.com/maps/dir/${latitude},${longitude}/${nearest.address}`;
+      } catch (error) {
+        console.error(error);
       }
-
-      // redirect to nearest location page
-      window.location.href = `https://www.google.com/maps/dir/${latitude},${longitude}/${nearest.address}`;
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    },
+    [router]
+  );
 
   const getUserLocation = (
     callback: (position: GeolocationPosition) => void,
