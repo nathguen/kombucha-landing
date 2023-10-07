@@ -62,6 +62,10 @@ function Carousel() {
   }, []);
 
   const pageHeight = React.useMemo(() => {
+    if (typeof window === "undefined") {
+      return 0;
+    }
+
     return window.innerHeight;
   }, []);
 
